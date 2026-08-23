@@ -1,9 +1,10 @@
 import { useState } from "react";
+import { useNavigate } from "react-router";
 
 export const Login = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [event.target.name]: event.target.value });
@@ -28,7 +29,7 @@ export const Login = () => {
         return;
       }
 
-      setSuccess(true);
+      navigate("/home");
     } catch (error) {
       setError(error instanceof Error ? error.message : "Error desconocido");
     }
@@ -65,7 +66,6 @@ export const Login = () => {
         </button>
       </form>
       {error && <p>{error}</p>}
-      {success && <p> sesion started successfully</p>}
     </>
   );
 };
