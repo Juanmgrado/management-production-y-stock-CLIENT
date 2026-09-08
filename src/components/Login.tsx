@@ -29,7 +29,7 @@ export const Login = () => {
         return;
       }
 
-      navigate("/home");
+      navigate("/products");
     } catch (error) {
       setError(error instanceof Error ? error.message : "Error desconocido");
     }
