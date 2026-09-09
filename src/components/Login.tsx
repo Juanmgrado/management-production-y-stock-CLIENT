@@ -1,8 +1,12 @@
 import { useState } from "react";
-import { useNavigate } from "react-router";
+import { Navigate, useNavigate } from "react-router";
+import { useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "../context/useAuth";
 
 export const Login = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { isAuthenticated, isLoading } = useAuth();
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [error, setError] = useState<string | null>(null);
 
@@ -29,11 +33,17 @@ export const Login = () => {
         return;
       }
 
+      await queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
+
       navigate("/products");
     } catch (error) {
       setError(error instanceof Error ? error.message : "Error desconocido");
     }
   };
+
+  if (isLoading) return null;
+
+  if (isAuthenticated) return <Navigate to="/products" replace />;
 
   return (
     <>
