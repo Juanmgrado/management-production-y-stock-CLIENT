@@ -36,36 +36,60 @@ export const Login = () => {
   };
 
   return (
-    <>
-      <h1>Login User</h1>
-      <form onSubmit={handleSubmit}>
-        <label htmlFor="email">Email</label>
-        <input
-          id="email"
-          value={formData.email}
-          onChange={handleChange}
-          type="email"
-          name="email"
-          required
-        ></input>
-        <label htmlFor="password">Password</label>
-        <input
-          id="password"
-          onChange={handleChange}
-          value={formData.password}
-          type="password"
-          name="password"
-          required
-        ></input>
-        <button type="submit">Send</button>
-        <button
-          type="button"
-          onClick={() => setFormData({ email: "", password: "" })}
-        >
-          Erase
-        </button>
+    <div className="mx-auto max-w-md p-6">
+      <h1 className="mb-4 text-2xl font-bold text-gray-900">Login</h1>
+      <form
+        onSubmit={handleSubmit}
+        className="flex flex-col gap-4 rounded-lg border border-gray-200 p-6"
+      >
+        <div className="flex flex-col gap-1">
+          <label htmlFor="email" className="text-sm font-medium text-gray-700">
+            Email
+          </label>
+          <input
+            id="email"
+            value={formData.email}
+            onChange={handleChange}
+            type="email"
+            name="email"
+            required
+            className="rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          ></input>
+        </div>
+        <div className="flex flex-col gap-1">
+          <label
+            htmlFor="password"
+            className="text-sm font-medium text-gray-700"
+          >
+            Password
+          </label>
+          <input
+            id="password"
+            onChange={handleChange}
+            value={formData.password}
+            type="password"
+            name="password"
+            required
+            className="rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          ></input>
+        </div>
+        <div className="flex gap-3">
+          <button
+            type="submit"
+            className="flex-1 rounded-md bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700"
+          >
+            Send
+          </button>
+          <button
+            type="button"
+            onClick={() => setFormData({ email: "", password: "" })}
+            className="rounded-md border border-gray-300 px-4 py-2 font-semibold text-gray-700 hover:bg-gray-100"
+          >
+            Erase
+          </button>
+        </div>
       </form>
-      {error && <p>{error}</p>}
-    </>
+      {error && <p className="mt-3 text-center text-red-600">{error}</p>}
+    </div>
   );
 };
