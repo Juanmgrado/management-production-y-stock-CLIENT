@@ -11,6 +11,7 @@ import {
   updateProduct,
 } from "../api/products";
 import { productsKey, productsListKey } from "../api/keys";
+import { useToast } from "../context/useToast";
 import type {
   CreateProductInput,
   ProductFilters,
@@ -24,32 +25,32 @@ export const useProducts = (filters: ProductFilters = {}) =>
     placeholderData: keepPreviousData,
   });
 
-const useInvalidateProducts = () => {
+const useProductMutationCallbacks = (message: string) => {
   const queryClient = useQueryClient();
-  return () => queryClient.invalidateQueries({ queryKey: productsKey });
+  const { addToast } = useToast();
+  return {
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: productsKey });
+      addToast(message);
+    },
+  };
 };
 
-export const useCreateProduct = () => {
-  const invalidate = useInvalidateProducts();
-  return useMutation({
+export const useCreateProduct = () =>
+  useMutation({
     mutationFn: (input: CreateProductInput) => createProduct(input),
-    onSuccess: invalidate,
+    ...useProductMutationCallbacks("Producto creado"),
   });
-};
 
-export const useUpdateProduct = () => {
-  const invalidate = useInvalidateProducts();
-  return useMutation({
+export const useUpdateProduct = () =>
+  useMutation({
     mutationFn: (vars: { uuid: string; input: UpdateProductInput }) =>
       updateProduct(vars.uuid, vars.input),
-    onSuccess: invalidate,
+    ...useProductMutationCallbacks("Producto actualizado"),
   });
-};
 
-export const useDeleteProduct = () => {
-  const invalidate = useInvalidateProducts();
-  return useMutation({
+export const useDeleteProduct = () =>
+  useMutation({
     mutationFn: (uuid: string) => deleteProduct(uuid),
-    onSuccess: invalidate,
+    ...useProductMutationCallbacks("Producto desactivado"),
   });
-};
