@@ -1,29 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
-import type { Product } from "../types/types";
-
-const fetchProducts = async (): Promise<Product[]> => {
-  const response = await fetch(`${import.meta.env.VITE_API_URL}/products`, {
-    credentials: "include",
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message);
-  }
-
-  const data = await response.json();
-  return data.data;
-};
+import { useProducts } from "../hooks/useProducts";
 
 export const Products = () => {
-  const {
-    data: products,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ["products"],
-    queryFn: fetchProducts,
-  });
+  const { data: products, isLoading, error } = useProducts();
 
   if (isLoading)
     return <p className="p-6 text-center text-gray-500">Cargando...</p>;
@@ -55,6 +33,3 @@ export const Products = () => {
     </div>
   );
 };
-
-//user@admind.com
-//Asdasd12
