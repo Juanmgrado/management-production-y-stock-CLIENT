@@ -17,10 +17,10 @@ export class ApiError extends Error {
 
 const toApiError = async (response: Response): Promise<ApiError> => {
   const body = await response.json().catch(() => ({}));
-  return new ApiError(
-    response.status,
-    body.message ?? `Error ${response.status}`,
-  );
+  const message = Array.isArray(body.message)
+    ? body.message.join(". ")
+    : body.message;
+  return new ApiError(response.status, message ?? `Error ${response.status}`);
 };
 
 export const apiFetch = async <T>(
