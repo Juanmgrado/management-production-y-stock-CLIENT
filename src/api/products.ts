@@ -5,7 +5,8 @@ import type {
 } from "../types/types";
 import { apiFetch } from "./client";
 
-export const getProducts = () => apiFetch<Product[]>("/products");
+export const getProducts = () =>
+  apiFetch<Product[]>("/products?isActive=true");
 
 export const createProduct = (input: CreateProductInput) =>
   apiFetch<Product>("/products", {
