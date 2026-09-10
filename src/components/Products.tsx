@@ -4,14 +4,14 @@ export const Products = () => {
   const { data: products, isLoading, error } = useProducts();
 
   if (isLoading)
-    return <p className="p-6 text-center text-gray-500">Cargando...</p>;
+    return <p className="text-center text-gray-500">Cargando...</p>;
   if (error)
-    return <p className="p-6 text-center text-red-600">{error.message}</p>;
+    return <p className="text-center text-red-600">{error.message}</p>;
 
   return (
-    <div className="mx-auto max-w-2xl p-6">
+    <>
       <h1 className="mb-4 text-2xl font-bold text-gray-900">Productos</h1>
-      <ul className="divide-y divide-gray-200 rounded-lg border border-gray-200">
+      <ul className="divide-y divide-gray-200 rounded-lg border border-gray-200 bg-white">
         {products?.map((product) => (
           <li
             key={product.uuid}
@@ -30,6 +30,6 @@ export const Products = () => {
           </li>
         ))}
       </ul>
-    </div>
+    </>
   );
 };
