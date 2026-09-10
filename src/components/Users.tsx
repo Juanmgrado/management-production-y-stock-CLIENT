@@ -207,7 +207,11 @@ const UserRow = ({ user, isSelf }: { user: User; isSelf: boolean }) => {
             </button>
             {!isSelf && (
               <button
-                onClick={() => deleteUser.mutate(user.uuid)}
+                onClick={() => {
+                  if (window.confirm(`¿Desactivar a ${user.name}?`)) {
+                    deleteUser.mutate(user.uuid);
+                  }
+                }}
                 disabled={deleteUser.isPending}
                 className="text-sm font-medium text-red-600 hover:text-red-800 disabled:opacity-50"
               >

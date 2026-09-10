@@ -189,7 +189,11 @@ const ProductRow = ({
                 Editar
               </button>
               <button
-                onClick={() => deleteProduct.mutate(product.uuid)}
+                onClick={() => {
+                  if (window.confirm(`¿Desactivar "${product.name}"?`)) {
+                    deleteProduct.mutate(product.uuid);
+                  }
+                }}
                 disabled={deleteProduct.isPending}
                 className="text-sm font-medium text-red-600 hover:text-red-800 disabled:opacity-50"
               >

@@ -12,6 +12,7 @@ import {
   updateUser,
 } from "../api/users";
 import { authMeKey, usersKey, usersListKey } from "../api/keys";
+import { useToast } from "../context/useToast";
 import type { CreateUserInput, UpdateUserInput, UserFilters } from "../types/types";
 
 export const useUsers = (filters: UserFilters = {}, enabled = true) =>
@@ -22,44 +23,40 @@ export const useUsers = (filters: UserFilters = {}, enabled = true) =>
     enabled,
   });
 
-const useInvalidateUsers = () => {
+const useUserMutationCallbacks = (message: string) => {
   const queryClient = useQueryClient();
-  return () => {
-    queryClient.invalidateQueries({ queryKey: usersKey });
-    // an admin can edit their own row, so keep the session in sync too
-    queryClient.invalidateQueries({ queryKey: authMeKey });
+  const { addToast } = useToast();
+  return {
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: usersKey });
+      // an admin can edit their own row, so keep the session in sync too
+      queryClient.invalidateQueries({ queryKey: authMeKey });
+      addToast(message);
+    },
   };
 };
 
-export const useCreateUser = () => {
-  const invalidate = useInvalidateUsers();
-  return useMutation({
+export const useCreateUser = () =>
+  useMutation({
     mutationFn: (input: CreateUserInput) => createUser(input),
-    onSuccess: invalidate,
+    ...useUserMutationCallbacks("Usuario creado"),
   });
-};
 
-export const useUpdateUser = () => {
-  const invalidate = useInvalidateUsers();
-  return useMutation({
+export const useUpdateUser = () =>
+  useMutation({
     mutationFn: (vars: { uuid: string; input: UpdateUserInput }) =>
       updateUser(vars.uuid, vars.input),
-    onSuccess: invalidate,
+    ...useUserMutationCallbacks("Usuario actualizado"),
   });
-};
 
-export const useDeleteUser = () => {
-  const invalidate = useInvalidateUsers();
-  return useMutation({
+export const useDeleteUser = () =>
+  useMutation({
     mutationFn: (uuid: string) => deleteUser(uuid),
-    onSuccess: invalidate,
+    ...useUserMutationCallbacks("Usuario desactivado"),
   });
-};
 
-export const useReactivateUser = () => {
-  const invalidate = useInvalidateUsers();
-  return useMutation({
+export const useReactivateUser = () =>
+  useMutation({
     mutationFn: (uuid: string) => reactivateUser(uuid),
-    onSuccess: invalidate,
+    ...useUserMutationCallbacks("Usuario reactivado"),
   });
-};
