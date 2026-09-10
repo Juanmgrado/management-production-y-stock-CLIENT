@@ -125,7 +125,7 @@ const ProductRow = ({
   const rowError = updateProduct.error ?? deleteProduct.error;
 
   return (
-    <li className="px-4 py-3">
+    <li className={`px-4 py-3 ${product.isActive ? "" : "bg-gray-100"}`}>
       <div className="flex items-center justify-between gap-3">
         {editing ? (
           <input
@@ -134,7 +134,11 @@ const ProductRow = ({
             className="flex-1 rounded-md border border-gray-300 px-2 py-1 text-sm"
           />
         ) : (
-          <span className="flex-1 font-medium text-gray-800">
+          <span
+            className={`flex-1 font-medium ${
+              product.isActive ? "text-gray-800" : "text-gray-400 line-through"
+            }`}
+          >
             {product.name}
           </span>
         )}
@@ -149,7 +153,14 @@ const ProductRow = ({
           stock: {product.stock}
         </span>
 
+        {!product.isActive && (
+          <span className="rounded-full bg-gray-200 px-3 py-1 text-xs font-semibold text-gray-500">
+            Inactivo
+          </span>
+        )}
+
         {canManage &&
+          product.isActive &&
           (editing ? (
             <>
               <button
@@ -194,7 +205,7 @@ const ProductRow = ({
         </p>
       )}
 
-      <StockAdjuster productUuid={product.uuid} />
+      {product.isActive && <StockAdjuster productUuid={product.uuid} />}
 
       {rowError && (
         <p className="mt-1 text-sm text-red-600">{rowError.message}</p>
