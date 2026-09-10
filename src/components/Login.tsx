@@ -10,6 +10,7 @@ export const Login = () => {
   const queryClient = useQueryClient();
   const { isAuthenticated, isLoading } = useAuth();
   const [formData, setFormData] = useState({ email: "", password: "" });
+  const [rememberMe, setRememberMe] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -23,7 +24,7 @@ export const Login = () => {
     try {
       setError(null);
       setSubmitting(true);
-      await login(formData);
+      await login({ ...formData, rememberMe });
       await queryClient.invalidateQueries({ queryKey: authMeKey });
       navigate("/products");
     } catch (error) {
@@ -82,6 +83,15 @@ export const Login = () => {
               className="rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:border-gray-900 focus:ring-1 focus:ring-gray-900"
             />
           </div>
+
+          <label className="flex items-center gap-2 text-sm text-gray-700">
+            <input
+              type="checkbox"
+              checked={rememberMe}
+              onChange={(e) => setRememberMe(e.target.checked)}
+            />
+            Recordar sesión
+          </label>
 
           {error && (
             <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-600">
