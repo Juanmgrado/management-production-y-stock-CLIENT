@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Navigate, useNavigate } from "react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "../context/useAuth";
+import { login } from "../api/auth";
+import { authMeKey } from "../api/keys";
 
 export const Login = () => {
   const navigate = useNavigate();
@@ -13,28 +15,14 @@ export const Login = () => {
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [event.target.name]: event.target.value });
   };
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     try {
-        setError(null)
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/auth/login`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(formData),
-          credentials: "include",
-        },
-      );
-      if (!response.ok) {
-        const errorData = await response.json();
-        setError(errorData.message);
-        return;
-      }
-
-      await queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
-
+      setError(null);
+      await login(formData);
+      await queryClient.invalidateQueries({ queryKey: authMeKey });
       navigate("/products");
     } catch (error) {
       setError(error instanceof Error ? error.message : "Error desconocido");

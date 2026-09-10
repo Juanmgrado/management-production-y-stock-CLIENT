@@ -1,16 +1,19 @@
 import { useNavigate } from "react-router";
 import { useQueryClient } from "@tanstack/react-query";
+import { logout } from "../api/auth";
+import { authMeKey } from "../api/keys";
 
 export const Home = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   const handleLogout = async () => {
-    await fetch(`${import.meta.env.VITE_API_URL}/auth/logout`, {
-      method: "POST",
-      credentials: "include",
-    });
-    queryClient.setQueryData(["auth", "me"], null);
+    try {
+      await logout();
+    } catch {
+      // el server ya no tenía sesión: igual limpiamos del lado del cliente
+    }
+    queryClient.setQueryData(authMeKey, null);
     navigate("/");
   };
 
