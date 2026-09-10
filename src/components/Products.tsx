@@ -1,60 +1,283 @@
-import { useQuery } from "@tanstack/react-query";
-import type { Product } from "../types/types";
+import { useState } from "react";
+import type { MovementType, Product, ProductFilters as Filters } from "../types/types";
+import {
+  useCreateProduct,
+  useDeleteProduct,
+  useProducts,
+  useRegisterMovement,
+  useUpdateProduct,
+} from "../hooks/useProducts";
+import { useAuth } from "../context/useAuth";
+import { ProductFilters } from "./ProductFilters";
 
-const fetchProducts = async (): Promise<Product[]> => {
-  const response = await fetch(`${import.meta.env.VITE_API_URL}/products`, {
-    credentials: "include",
-  });
+const CreateProductForm = () => {
+  const [name, setName] = useState("");
+  const [stock, setStock] = useState("");
+  const createProduct = useCreateProduct();
 
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message);
-  }
-
-  const data = await response.json();
-  return data.data;
-};
-
-export const Products = () => {
-  const {
-    data: products,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ["products"],
-    queryFn: fetchProducts,
-  });
-
-  if (isLoading)
-    return <p className="p-6 text-center text-gray-500">Cargando...</p>;
-  if (error)
-    return <p className="p-6 text-center text-red-600">{error.message}</p>;
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    createProduct.mutate(
+      { name, stock: stock === "" ? undefined : Number(stock) },
+      {
+        onSuccess: () => {
+          setName("");
+          setStock("");
+        },
+      },
+    );
+  };
 
   return (
-    <div className="mx-auto max-w-2xl p-6">
-      <h1 className="mb-4 text-2xl font-bold text-gray-900">Productos</h1>
-      <ul className="divide-y divide-gray-200 rounded-lg border border-gray-200">
-        {products?.map((product) => (
-          <li
-            key={product.uuid}
-            className="flex items-center justify-between px-4 py-3"
-          >
-            <span className="font-medium text-gray-800">{product.name}</span>
-            <span
-              className={`rounded-full px-3 py-1 text-sm font-semibold ${
-                product.stock > 0
-                  ? "bg-green-100 text-green-700"
-                  : "bg-red-100 text-red-700"
-              }`}
-            >
-              stock: {product.stock}
-            </span>
-          </li>
-        ))}
-      </ul>
+    <form onSubmit={handleSubmit} className="mb-4">
+      <div className="flex gap-2">
+        <input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Nombre (5-30 caracteres)"
+          required
+          className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm"
+        />
+        <input
+          value={stock}
+          onChange={(e) => setStock(e.target.value)}
+          placeholder="Stock"
+          type="number"
+          min={1}
+          className="w-24 rounded-md border border-gray-300 px-3 py-2 text-sm"
+        />
+        <button
+          type="submit"
+          disabled={createProduct.isPending}
+          className="rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+        >
+          Agregar
+        </button>
+      </div>
+      {createProduct.error && (
+        <p className="mt-1 text-sm text-red-600">
+          {createProduct.error.message}
+        </p>
+      )}
+    </form>
+  );
+};
+
+const StockAdjuster = ({ productUuid }: { productUuid: string }) => {
+  const [quantity, setQuantity] = useState("1");
+  const movement = useRegisterMovement();
+
+  const submit = (typeMovement: MovementType) => {
+    const value = Number(quantity);
+    if (!Number.isInteger(value) || value < 1) return;
+    movement.mutate({ productUuid, input: { quantity: value, typeMovement } });
+  };
+
+  return (
+    <div className="mt-2 flex items-center gap-2">
+      <input
+        value={quantity}
+        onChange={(e) => setQuantity(e.target.value)}
+        type="number"
+        min={1}
+        className="w-16 rounded-md border border-gray-300 px-2 py-1 text-sm"
+      />
+      <button
+        onClick={() => submit("IN")}
+        disabled={movement.isPending}
+        className="rounded-md border border-green-300 px-2 py-1 text-sm font-medium text-green-700 hover:bg-green-50 disabled:opacity-50"
+      >
+        Entrada
+      </button>
+      <button
+        onClick={() => submit("OUT")}
+        disabled={movement.isPending}
+        className="rounded-md border border-red-300 px-2 py-1 text-sm font-medium text-red-700 hover:bg-red-50 disabled:opacity-50"
+      >
+        Salida
+      </button>
+      {movement.error && (
+        <span className="text-sm text-red-600">{movement.error.message}</span>
+      )}
     </div>
   );
 };
 
-//user@admind.com
-//Asdasd12
+const ProductRow = ({
+  product,
+  canManage,
+}: {
+  product: Product;
+  canManage: boolean;
+}) => {
+  const [editing, setEditing] = useState(false);
+  const [name, setName] = useState(product.name);
+  const updateProduct = useUpdateProduct();
+  const deleteProduct = useDeleteProduct();
+
+  const handleSave = () => {
+    updateProduct.mutate(
+      { uuid: product.uuid, input: { name } },
+      { onSuccess: () => setEditing(false) },
+    );
+  };
+
+  const rowError = updateProduct.error ?? deleteProduct.error;
+
+  return (
+    <li className={`px-4 py-3 ${product.isActive ? "" : "bg-gray-100"}`}>
+      <div className="flex items-center justify-between gap-3">
+        {editing ? (
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="flex-1 rounded-md border border-gray-300 px-2 py-1 text-sm"
+          />
+        ) : (
+          <span
+            className={`flex-1 font-medium ${
+              product.isActive ? "text-gray-800" : "text-gray-400 line-through"
+            }`}
+          >
+            {product.name}
+          </span>
+        )}
+
+        <span
+          className={`rounded-full px-3 py-1 text-sm font-semibold ${
+            product.stock > 0
+              ? "bg-green-100 text-green-700"
+              : "bg-red-100 text-red-700"
+          }`}
+        >
+          stock: {product.stock}
+        </span>
+
+        {!product.isActive && (
+          <span className="rounded-full bg-gray-200 px-3 py-1 text-xs font-semibold text-gray-500">
+            Inactivo
+          </span>
+        )}
+
+        {canManage &&
+          product.isActive &&
+          (editing ? (
+            <>
+              <button
+                onClick={handleSave}
+                disabled={updateProduct.isPending}
+                className="text-sm font-medium text-gray-900 disabled:opacity-50"
+              >
+                Guardar
+              </button>
+              <button
+                onClick={() => {
+                  setName(product.name);
+                  setEditing(false);
+                }}
+                className="text-sm text-gray-500"
+              >
+                Cancelar
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                onClick={() => setEditing(true)}
+                className="text-sm font-medium text-gray-600 hover:text-gray-900"
+              >
+                Editar
+              </button>
+              <button
+                onClick={() => deleteProduct.mutate(product.uuid)}
+                disabled={deleteProduct.isPending}
+                className="text-sm font-medium text-red-600 hover:text-red-800 disabled:opacity-50"
+              >
+                Eliminar
+              </button>
+            </>
+          ))}
+      </div>
+
+      {product.createdBy && (
+        <p className="mt-1 text-xs text-gray-400">
+          Creado por {product.createdBy.name}
+        </p>
+      )}
+
+      {product.isActive && <StockAdjuster productUuid={product.uuid} />}
+
+      {rowError && (
+        <p className="mt-1 text-sm text-red-600">{rowError.message}</p>
+      )}
+    </li>
+  );
+};
+
+const initialFilters: Filters = { status: "active", page: 1, limit: 10 };
+
+export const Products = () => {
+  const { user } = useAuth();
+  const isAdmin = !!user?.isAdmin;
+  const [filters, setFilters] = useState<Filters>(initialFilters);
+  const { data: page, isLoading, error } = useProducts(filters);
+
+  const handleFilterChange = (next: Filters) => {
+    setFilters({ ...initialFilters, ...next, page: 1 });
+  };
+
+  const goToPage = (target: number) => {
+    setFilters((prev) => ({ ...prev, page: target }));
+  };
+
+  return (
+    <>
+      <h1 className="mb-4 text-2xl font-bold text-gray-900">Productos</h1>
+      {isAdmin && <CreateProductForm />}
+      <ProductFilters onChange={handleFilterChange} />
+
+      {isLoading && <p className="text-center text-gray-500">Cargando...</p>}
+      {error && <p className="text-center text-red-600">{error.message}</p>}
+
+      {page && (
+        <>
+          <ul className="divide-y divide-gray-200 rounded-lg border border-gray-200 bg-white">
+            {page.data.map((product) => (
+              <ProductRow
+                key={product.uuid}
+                product={product}
+                canManage={isAdmin}
+              />
+            ))}
+          </ul>
+
+          {page.data.length === 0 && (
+            <p className="mt-4 text-center text-gray-500">Sin resultados</p>
+          )}
+
+          {page.totalPages > 1 && (
+            <div className="mt-4 flex items-center justify-center gap-3 text-sm">
+              <button
+                onClick={() => goToPage(page.page - 1)}
+                disabled={page.page <= 1}
+                className="rounded-md border border-gray-300 px-3 py-1.5 font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50"
+              >
+                Anterior
+              </button>
+              <span className="text-gray-500">
+                Página {page.page} de {page.totalPages}
+              </span>
+              <button
+                onClick={() => goToPage(page.page + 1)}
+                disabled={page.page >= page.totalPages}
+                className="rounded-md border border-gray-300 px-3 py-1.5 font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50"
+              >
+                Siguiente
+              </button>
+            </div>
+          )}
+        </>
+      )}
+    </>
+  );
+};
