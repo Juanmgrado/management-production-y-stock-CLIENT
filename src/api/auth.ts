@@ -4,6 +4,7 @@ import { ApiError, apiFetch } from "./client";
 type Credentials = {
   email: string;
   password: string;
+  rememberMe?: boolean;
 };
 
 export const getMe = async (): Promise<User | null> => {
