@@ -5,6 +5,15 @@ export type Product = {
   isActive: boolean;
 };
 
+export type CreateProductInput = {
+  name: string;
+  stock?: number;
+};
+
+export type UpdateProductInput = {
+  name: string;
+};
+
 export type User = {
   uuid: string;
   name: string;
