@@ -22,6 +22,11 @@ export const Layout = () => {
             <NavLink to="/home" className={linkClass}>
               Inicio
             </NavLink>
+            {user?.isAdmin && (
+              <NavLink to="/users" className={linkClass}>
+                Usuarios
+              </NavLink>
+            )}
           </div>
           <div className="flex items-center gap-4">
             <span className="text-sm text-gray-500">{user?.email}</span>

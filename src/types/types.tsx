@@ -64,3 +64,31 @@ export type AuthContextValue = {
   isAuthenticated: boolean;
   isLoading: boolean;
 };
+
+export type UserRole = "admin" | "user" | "all";
+export type UserSortBy = "name" | "email";
+
+export type UserFilters = {
+  name?: string;
+  email?: string;
+  role?: UserRole;
+  status?: ProductStatus;
+  sortBy?: UserSortBy;
+  order?: SortOrder;
+  page?: number;
+  limit?: number;
+};
+
+export type CreateUserInput = {
+  name: string;
+  email: string;
+  isAdmin: boolean;
+  password: string;
+  repeatPassword: string;
+};
+
+export type UpdateUserInput = {
+  name?: string;
+  email?: string;
+  isAdmin?: boolean;
+};
