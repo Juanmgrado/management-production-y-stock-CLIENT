@@ -14,13 +14,16 @@ export const Layout = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="border-b border-gray-200 bg-white">
-        <nav className="mx-auto flex max-w-4xl items-center justify-between px-6 py-3">
-          <div className="flex items-center gap-2">
+        <nav className="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-2 px-6 py-3">
+          <div className="flex flex-wrap items-center gap-1">
+            <NavLink to="/home" className={linkClass}>
+              Inicio
+            </NavLink>
             <NavLink to="/products" className={linkClass}>
               Productos
             </NavLink>
-            <NavLink to="/home" className={linkClass}>
-              Inicio
+            <NavLink to="/movements" className={linkClass}>
+              Movimientos
             </NavLink>
             {user?.isAdmin && (
               <NavLink to="/users" className={linkClass}>
@@ -29,7 +32,12 @@ export const Layout = () => {
             )}
           </div>
           <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-500">{user?.email}</span>
+            <NavLink
+              to="/account"
+              className="text-sm text-gray-500 hover:text-gray-900"
+            >
+              {user?.email}
+            </NavLink>
             <button
               onClick={logout}
               className="rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100"

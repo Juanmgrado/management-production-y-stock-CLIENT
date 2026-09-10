@@ -51,6 +51,31 @@ export type Movement = {
   createdAt: string;
 };
 
+export type MovementListItem = {
+  uuid: string;
+  quantity: number;
+  typeMovement: MovementType;
+  note: string;
+  createdAt: string;
+  product: { uuid: string; name: string };
+  user: { name: string } | null;
+};
+
+export type MovementFilters = {
+  productUuid?: string;
+  movementType?: MovementType;
+  startDate?: string;
+  endDate?: string;
+  page?: number;
+  limit?: number;
+};
+
+export type ChangePasswordInput = {
+  currentPassword: string;
+  newPassword: string;
+  repeatNewPassword: string;
+};
+
 export type User = {
   uuid: string;
   name: string;

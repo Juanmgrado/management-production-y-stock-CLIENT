@@ -14,11 +14,12 @@ import {
 import { authMeKey, usersKey, usersListKey } from "../api/keys";
 import type { CreateUserInput, UpdateUserInput, UserFilters } from "../types/types";
 
-export const useUsers = (filters: UserFilters = {}) =>
+export const useUsers = (filters: UserFilters = {}, enabled = true) =>
   useQuery({
     queryKey: usersListKey(filters),
     queryFn: () => getUsers(filters),
     placeholderData: keepPreviousData,
+    enabled,
   });
 
 const useInvalidateUsers = () => {
