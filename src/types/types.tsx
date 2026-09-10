@@ -3,6 +3,10 @@ export type Product = {
   name: string;
   stock: number;
   isActive: boolean;
+  createdBy?: {
+    uuid: string;
+    name: string;
+  };
 };
 
 export type CreateProductInput = {
@@ -14,10 +18,20 @@ export type UpdateProductInput = {
   name: string;
 };
 
+export type ProductStatus = "active" | "inactive" | "all";
+export type ProductSortBy = "name" | "stock";
+export type SortOrder = "ASC" | "DESC";
+
 export type ProductFilters = {
   name?: string;
   minStock?: number;
   maxStock?: number;
+  status?: ProductStatus;
+  sortBy?: ProductSortBy;
+  order?: SortOrder;
+  createdBy?: string;
+  page?: number;
+  limit?: number;
 };
 
 export type MovementType = "IN" | "OUT";
