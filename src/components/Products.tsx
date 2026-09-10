@@ -4,9 +4,9 @@ import {
   useCreateProduct,
   useDeleteProduct,
   useProducts,
-  useRegisterMovement,
   useUpdateProduct,
 } from "../hooks/useProducts";
+import { useRegisterMovement } from "../hooks/useMovements";
 import { useAuth } from "../context/useAuth";
 import { ProductFilters } from "./ProductFilters";
 

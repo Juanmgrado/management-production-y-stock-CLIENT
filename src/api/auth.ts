@@ -1,4 +1,4 @@
-import type { User } from "../types/types";
+import type { ChangePasswordInput, User } from "../types/types";
 import { ApiError, apiFetch } from "./client";
 
 type Credentials = {
@@ -25,3 +25,9 @@ export const login = (credentials: Credentials) =>
   });
 
 export const logout = () => apiFetch<void>("/auth/logout", { method: "POST" });
+
+export const changePassword = (input: ChangePasswordInput) =>
+  apiFetch<void>("/auth/change-password", {
+    method: "PATCH",
+    body: JSON.stringify(input),
+  });

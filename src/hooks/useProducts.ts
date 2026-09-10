@@ -10,12 +10,10 @@ import {
   getProducts,
   updateProduct,
 } from "../api/products";
-import { registerMovement } from "../api/movements";
 import { productsKey, productsListKey } from "../api/keys";
 import type {
   CreateProductInput,
   ProductFilters,
-  RegisterMovementInput,
   UpdateProductInput,
 } from "../types/types";
 
@@ -52,15 +50,6 @@ export const useDeleteProduct = () => {
   const invalidate = useInvalidateProducts();
   return useMutation({
     mutationFn: (uuid: string) => deleteProduct(uuid),
-    onSuccess: invalidate,
-  });
-};
-
-export const useRegisterMovement = () => {
-  const invalidate = useInvalidateProducts();
-  return useMutation({
-    mutationFn: (vars: { productUuid: string; input: RegisterMovementInput }) =>
-      registerMovement(vars.productUuid, vars.input),
     onSuccess: invalidate,
   });
 };
