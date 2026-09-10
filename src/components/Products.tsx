@@ -7,6 +7,7 @@ import {
   useRegisterMovement,
   useUpdateProduct,
 } from "../hooks/useProducts";
+import { useAuth } from "../context/useAuth";
 import { ProductFilters } from "./ProductFilters";
 
 const CreateProductForm = () => {
@@ -102,7 +103,13 @@ const StockAdjuster = ({ productUuid }: { productUuid: string }) => {
   );
 };
 
-const ProductRow = ({ product }: { product: Product }) => {
+const ProductRow = ({
+  product,
+  canManage,
+}: {
+  product: Product;
+  canManage: boolean;
+}) => {
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(product.name);
   const updateProduct = useUpdateProduct();
@@ -142,43 +149,50 @@ const ProductRow = ({ product }: { product: Product }) => {
           stock: {product.stock}
         </span>
 
-        {editing ? (
-          <>
-            <button
-              onClick={handleSave}
-              disabled={updateProduct.isPending}
-              className="text-sm font-medium text-gray-900 disabled:opacity-50"
-            >
-              Guardar
-            </button>
-            <button
-              onClick={() => {
-                setName(product.name);
-                setEditing(false);
-              }}
-              className="text-sm text-gray-500"
-            >
-              Cancelar
-            </button>
-          </>
-        ) : (
-          <>
-            <button
-              onClick={() => setEditing(true)}
-              className="text-sm font-medium text-gray-600 hover:text-gray-900"
-            >
-              Editar
-            </button>
-            <button
-              onClick={() => deleteProduct.mutate(product.uuid)}
-              disabled={deleteProduct.isPending}
-              className="text-sm font-medium text-red-600 hover:text-red-800 disabled:opacity-50"
-            >
-              Eliminar
-            </button>
-          </>
-        )}
+        {canManage &&
+          (editing ? (
+            <>
+              <button
+                onClick={handleSave}
+                disabled={updateProduct.isPending}
+                className="text-sm font-medium text-gray-900 disabled:opacity-50"
+              >
+                Guardar
+              </button>
+              <button
+                onClick={() => {
+                  setName(product.name);
+                  setEditing(false);
+                }}
+                className="text-sm text-gray-500"
+              >
+                Cancelar
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                onClick={() => setEditing(true)}
+                className="text-sm font-medium text-gray-600 hover:text-gray-900"
+              >
+                Editar
+              </button>
+              <button
+                onClick={() => deleteProduct.mutate(product.uuid)}
+                disabled={deleteProduct.isPending}
+                className="text-sm font-medium text-red-600 hover:text-red-800 disabled:opacity-50"
+              >
+                Eliminar
+              </button>
+            </>
+          ))}
       </div>
+
+      {product.createdBy && (
+        <p className="mt-1 text-xs text-gray-400">
+          Creado por {product.createdBy.name}
+        </p>
+      )}
 
       <StockAdjuster productUuid={product.uuid} />
 
@@ -189,25 +203,69 @@ const ProductRow = ({ product }: { product: Product }) => {
   );
 };
 
+const initialFilters: Filters = { status: "active", page: 1, limit: 10 };
+
 export const Products = () => {
-  const [filters, setFilters] = useState<Filters>({});
-  const { data: products, isLoading, error } = useProducts(filters);
+  const { user } = useAuth();
+  const isAdmin = !!user?.isAdmin;
+  const [filters, setFilters] = useState<Filters>(initialFilters);
+  const { data: page, isLoading, error } = useProducts(filters);
+
+  const handleFilterChange = (next: Filters) => {
+    setFilters({ ...initialFilters, ...next, page: 1 });
+  };
+
+  const goToPage = (target: number) => {
+    setFilters((prev) => ({ ...prev, page: target }));
+  };
 
   return (
     <>
       <h1 className="mb-4 text-2xl font-bold text-gray-900">Productos</h1>
-      <CreateProductForm />
-      <ProductFilters onChange={setFilters} />
+      {isAdmin && <CreateProductForm />}
+      <ProductFilters onChange={handleFilterChange} />
 
       {isLoading && <p className="text-center text-gray-500">Cargando...</p>}
       {error && <p className="text-center text-red-600">{error.message}</p>}
 
-      {products && (
-        <ul className="divide-y divide-gray-200 rounded-lg border border-gray-200 bg-white">
-          {products.map((product) => (
-            <ProductRow key={product.uuid} product={product} />
-          ))}
-        </ul>
+      {page && (
+        <>
+          <ul className="divide-y divide-gray-200 rounded-lg border border-gray-200 bg-white">
+            {page.data.map((product) => (
+              <ProductRow
+                key={product.uuid}
+                product={product}
+                canManage={isAdmin}
+              />
+            ))}
+          </ul>
+
+          {page.data.length === 0 && (
+            <p className="mt-4 text-center text-gray-500">Sin resultados</p>
+          )}
+
+          {page.totalPages > 1 && (
+            <div className="mt-4 flex items-center justify-center gap-3 text-sm">
+              <button
+                onClick={() => goToPage(page.page - 1)}
+                disabled={page.page <= 1}
+                className="rounded-md border border-gray-300 px-3 py-1.5 font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50"
+              >
+                Anterior
+              </button>
+              <span className="text-gray-500">
+                Página {page.page} de {page.totalPages}
+              </span>
+              <button
+                onClick={() => goToPage(page.page + 1)}
+                disabled={page.page >= page.totalPages}
+                className="rounded-md border border-gray-300 px-3 py-1.5 font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50"
+              >
+                Siguiente
+              </button>
+            </div>
+          )}
+        </>
       )}
     </>
   );

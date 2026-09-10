@@ -1,4 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import {
   createProduct,
   deleteProduct,
@@ -18,6 +23,7 @@ export const useProducts = (filters: ProductFilters = {}) =>
   useQuery({
     queryKey: productsListKey(filters),
     queryFn: () => getProducts(filters),
+    placeholderData: keepPreviousData,
   });
 
 const useInvalidateProducts = () => {
